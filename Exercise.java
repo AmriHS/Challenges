@@ -1,4 +1,5 @@
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -12,7 +13,7 @@ class Apple implements Item {
         visitor.addToCart(this);
     }
     public final BigDecimal getPrice(){
-        return new BigDecimal(3.5);
+        return new BigDecimal(0.6);
     }
 }
 
@@ -21,7 +22,7 @@ class Orange implements Item{
         visitor.addToCart(this);
     }
     public final BigDecimal getPrice(){
-        return new BigDecimal(3.5);
+        return new BigDecimal(0.25);
     }
 }
 
@@ -29,6 +30,7 @@ interface Visitor{
     void addToCart(Orange o);
     void addToCart(Apple a);
     BigDecimal checkout();
+    BigDecimal checkoutWithDiscount();
 }
 class ItemVisitor implements Visitor {
     List<Orange> oranges;
@@ -53,9 +55,23 @@ class ItemVisitor implements Visitor {
             cost = cost.add(a.getPrice());
         for(Orange o : oranges)
             cost = cost.add(o.getPrice());
+        cost = cost.setScale(2, RoundingMode.CEILING);
         return cost;
     }
 
+    public BigDecimal checkoutWithDiscount(){
+        BigDecimal cost = new BigDecimal(0);
+        for(int i=0; i<apples.size(); i+=2)
+            cost = cost.add(apples.get(i).getPrice());
+
+        for(int i=0; i<oranges.size(); i++) {
+            if ((i + 1) % 3 == 0) continue;
+            cost = cost.add(oranges.get(i).getPrice());
+        }
+
+        cost = cost.setScale(2, RoundingMode.CEILING);
+        return cost;
+    }
 }
 
 public class Exercise {
@@ -76,6 +92,8 @@ public class Exercise {
             Item item = new Apple();
             item.accept(visitor);
         }
-        System.out.println("Total cost of your basket: $"+visitor.checkout());
+        System.out.println("Total cost of your basket: £"+visitor.checkout());
+        System.out.println("Total cost of your basket with discount: £"+visitor.checkoutWithDiscount());
+
     }
 }
